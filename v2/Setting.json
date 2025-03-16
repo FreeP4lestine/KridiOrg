@@ -1,0 +1,40 @@
+{
+    "name": "Kridi Organizer",
+    "version": "1.0",
+    "backColor": "FCEFDC",
+    "editBackColor": "F0AD4E",
+    "IB": [
+        [
+            "0x80FFFFFF",
+            "",
+            "",
+            "",
+            "0x80F0AD4E",
+            "1"
+        ],
+        [
+            "0x80F0AD4E",
+            "",
+            "",
+            "",
+            "0x80F0AD4E",
+            "1"
+        ],
+        [
+            "0x80F0AD4E",
+            "",
+            "0xFFFFFF00",
+            "",
+            "0x80F0AD4E",
+            "1"
+        ],
+        [
+            "0xFFFFFFFF",
+            "",
+            "0xFFB2B2B2",
+            "",
+            "0xFFCCCCCC",
+            "1"
+        ]
+    ]
+}
