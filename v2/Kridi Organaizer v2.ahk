@@ -41,8 +41,8 @@ Loop 3
 
 KO.SetFont('s9')
 Locate := KO.AddButton('xm+538 ym+113 w283 h20', ISTR.3)
-Locate.OnEvent('Click', LocateDB)
-LocateDB(Ctrl, Info) {
+Locate.OnEvent('Click', (*) => LocateDB())
+LocateDB() {
     If !Folder := FileSelect('D')
         Return
     CurrentLocation.Value := Folder
@@ -52,8 +52,11 @@ LocateDB(Ctrl, Info) {
         Selections .= (Selections = '' ? '' : '|') Folder
         IniWrite(Selections, A_AppData "\Kridi_Config.ini", 'FolderPath', 'Selection')
         SelectedFolder.Delete()
-        SelectedFolder.Add(StrSplit(Selections, '|'))
+        SelArr := StrSplit(Selections, '|')
+        SelectedFolder.Add(SelArr)
+        SelectedFolder.Choose(SelArr.Length)
     } Else SelectedFolder.Choose(Index)
+    LoadDB()
     WriteHistory('"' Folder '" ' ISTR.58)
 }
 CreateImageButton(Locate, 0, Set['IB']*)
@@ -123,11 +126,14 @@ History := KO.AddListView('xm+538 ym+299 w283 r3 VScroll HScroll Grid Background
 SelectedFolder := KO.AddListBox('xm+538 ym+136 w283 r6 HScroll Background' Set['backColor'])
 SelectedFolder.OnEvent('Change', (*) => LoadDB())
 LoadDB() {
+    NoEmptyName.Delete()
+    EmptyName.Delete()
+    TotalKridi.Value := ''
+    Lowest.Value := ''
+    Highest.Value := ''
     If !SelectedFolder.Text || !DirExist(SelectedFolder.Text)
         Return
     IniWrite(SelectedFolder.Text, A_AppData "\Kridi_Config.ini", "FolderPath", "LastSelectedFolder")
-    NoEmptyName.Delete()
-    EmptyName.Delete()
     TotalSum := Low := High := 0
     LowName := HighName := ''
     Loop Files, SelectedFolder.Text '\*.txt' {
@@ -479,20 +485,25 @@ ContextMenu2.SetIcon(ISTR.21, 'Open.png', , 0)
 ContextMenu2.Add(ISTR.19, RemoveFolder)
 RemoveFolder(ItemName, ItemPos, MyMenu) {
     RemoveLocation()
+    
 }
 ContextMenu2.SetIcon(ISTR.19, 'Remove.png', , 0)
 ContextMenu2.SetColor('FFFFFF')
 
-KO.Show(), AutoLoad(), LoadDB(), LoadHistory()
+KO.Show(), AutoLoad(), LoadHistory()
 
 AutoLoad() {
+    LastSelectedFolder := IniRead(A_AppData "\Kridi_Config.ini", "FolderPath", "LastSelectedFolder", "")
+    If LastSelectedFolder = '' {
+        LocateDB()
+    }
     Selections := IniRead(A_AppData "\Kridi_Config.ini", "FolderPath", "Selection", "")
     SelectedFolder.Delete()
     SelectedFolder.Add(StrSplit(Selections, '|'))
-    LastSelectedFolder := IniRead(A_AppData "\Kridi_Config.ini", "FolderPath", "LastSelectedFolder", "")
     CurrentLocation.Value := LastSelectedFolder
     If Index := IsSelectedFolder(LastSelectedFolder, Selections)
         SelectedFolder.Choose(Index)
+    LoadDB()
 }
 
 RemoveLocation() {
