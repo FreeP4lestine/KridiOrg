@@ -101,7 +101,9 @@ ShowFullHistory() {
     SFH.Show()
 }
 LoadFullHistory() {
-    HObj := FileOpen(A_AppData "\IKAHistory.log", "r")
+    Try HObj := FileOpen(A_AppData "\IKAHistory.log", "r")
+    Catch
+        Return
     HistoryList.Delete()
     While (!HObj.AtEOF) {
         CurrLine := HObj.ReadLine()
@@ -431,12 +433,42 @@ TotalKridi := KO.AddEdit('xm+' x ' ym+' y ' w395 h28 Center ReadOnly -E0x200 cFF
 ContextMenu1 := Menu()
 ContextMenu1.Add(ISTR.20, AddName)
 AddName(ItemName, ItemPos, MyMenu) {
-
+    Loop {
+        Done := False
+        InputName := InputBox(ISTR.94, ISTR.20, 'w400 h90')
+        If InputName.Result != 'OK'
+            Return
+        If InputName.Value = '' {
+            MsgBox(ISTR.95, ISTR.20, 0x30)
+            Continue
+        }
+        If FileExist(CurrentLocation.Value '\' InputName.Value '.txt') {
+            MsgBox(ISTR.96, ISTR.20, 0x30)
+            Continue
+        }
+        Try {
+            FileOpen(CurrentLocation.Value '\' InputName.Value '.txt', 'w').Close()
+            LoadDB()
+        }
+        Catch {
+            If 'Yes' = MsgBox(ISTR.97, ISTR.20, 0x30 + 0x4)
+                Continue
+        }
+        Done := True
+    } Until Done
 }
 ContextMenu1.SetIcon(ISTR.20, 'Add.png', , 0)
 ContextMenu1.Add(ISTR.19, RemoveName)
 RemoveName(ItemName, ItemPos, MyMenu) {
-
+    If !CurrentLocation.Value || !Name := SubStr(NoEmptyName.Text EmptyName.Text, 4) {
+        Return
+    }
+    Try FileDelete(CurrentLocation.Value '\' Name '.txt')
+    Catch {
+        MsgBox(ISTR.98, ISTR.19, 0x30)
+        Return
+    }
+    LoadDB()
 }
 ContextMenu1.SetIcon(ISTR.19, 'Remove.png', , 0)
 ContextMenu1.SetColor('FFFFFF')
@@ -563,9 +595,9 @@ ProportionsCalc(WWidth := 0, WHeight := 0) {
     }
     For Control, Ratio in Proportion {
         Control.Move(
-            WWidth * Ratio[1], 
-            WHeight * Ratio[2], 
-            WWidth * Ratio[3], 
+            WWidth * Ratio[1],
+            WHeight * Ratio[2],
+            WWidth * Ratio[3],
             WHeight * Ratio[4]
         )
         If Type(Control) = 'Gui.Button'
